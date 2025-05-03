@@ -1,31 +1,29 @@
-# Project Title
+# USB Device Access in WSL2
+
+Enable USB-to-serial and other USB device support in WSL2 using `usbipd-win` and optional custom kernel modules.
 
 ## Table of Contents
+
 1. [Overview](#overview)
-2. [Setup](#setup)
-3. [Usage](#usage)
-4. [Contributing](#contributing)
-5. [License](#license)
+2. [Concept: Bridging USB Devices into WSL2](#concept-bridging-usb-devices-into-wsl2)
+3. [Repository Contents](#repository-contents)
+4. [Precompiled Modules in WSL2](#precompiled-modules-in-wsl2)
+5. [Setup](#setup)
+
+   * [Step 1: Windows Host Setup](#step-1-windows-host-setup-required-once)
+   * [Step 2: WSL2 Setup](#step-2-wsl2-setup)
+6. [Contributing](#contributing)
+7. [License](#license)
 
 ## Overview
 
-# USB Device Access in WSL2
+This repository provides everything needed to use USB devices — especially USB-to-serial adapters — inside WSL2. It's aimed at developers working with Arduinos, embedded boards, and other hardware platforms that expose serial interfaces over USB.
 
-This repository documents how to use USB devices — especially USB-to-serial adapters — inside WSL2 on a Windows host. It is aimed at developers working with hardware like Arduinos, embedded boards, microcontrollers, and other serial-based or USB-connected equipment.
+This setup assumes Ubuntu in WSL2, though other distros should work with minor changes.
 
-Many tools for such platforms work better under Linux, but WSL2 provides a practical middle ground between Linux development and Windows convenience.
+## Concept: Bridging USB Devices into WSL2
 
-This setup assumes Ubuntu in WSL2, though it can be adapted for other distros with minor changes.
-
----
-
-## Setup
-
-## 🚦 Concept: Bridging USB Devices into WSL2
-
-WSL2 does not have native access to USB devices. However, USB passthrough is possible using the [usbipd-win](https://github.com/dorssel/usbipd-win) project and USB/IP protocol.
-
-The idea is:
+WSL2 does not provide native access to USB devices. However, you can forward them using [`usbipd-win`](https://github.com/dorssel/usbipd-win) and the USB/IP protocol.
 
 ```
   [USB Device]     →     [Windows Host + usbipd]     →     [WSL2 Kernel]     →     /dev/ttyUSB*
@@ -34,169 +32,135 @@ The idea is:
 
 This repository provides tools to:
 
-* Attach USB devices using `usbipd`
-* Check kernel support for drivers
-* Build and persist missing kernel modules (like `pl2303`)
-* Configure permissions and startup behavior
+* Attach USB devices via `usbipd`
+* Check for driver availability in your WSL2 kernel
+* Build missing kernel modules (e.g., `pl2303`)
+* Restore them at boot
+* Fix device permissions for user access
+* Automate the entire process
 
-To learn more about USB device passthrough and usbipd setup, see [`wsl2-serial.md`](./wsl2-serial.md).
+See [`wsl2-serial.md`](./wsl2-serial.md) for a full walkthrough.
 
----
+## Repository Contents
 
-## What's in this repo
+* [`wsl2-serial.md`](./wsl2-serial.md): Full guide for using USB serial devices with WSL2, including `usbipd` setup on Windows.
+* [`wsl2-kernel.md`](./wsl2-kernel.md): Instructions for checking and compiling missing USB serial drivers (e.g. `pl2303`).
+* [`wsl2-systemd.md`](./wsl2-systemd.md): Optional steps to enable systemd for improved udev support.
+* `wsl-build-kernel-module.sh`: Build USB serial modules from the WSL2 kernel source.
+* `wsl-restore-kernel-modules.sh`: Restore compiled modules into the active kernel.
+* `wsl-boot-config.sh`: Configure `/etc/wsl.conf` to enable systemd and module restore at boot.
+* `wsl-usb-serial-permissions.sh`: Apply udev rules and group membership for device access.
+* `wsl-setup-all.sh`: Run all setup steps in sequence.
 
-* [`wsl2-serial.md`](./wsl2-serial.md)
-  How to attach USB serial devices from Windows into WSL2 and make them accessible under `/dev/ttyUSB*`. Includes full `usbipd` setup.
+## Precompiled Modules in WSL2
 
-* [`wsl2-kernel.md`](./wsl2-kernel.md)
-  Instructions for checking which USB serial drivers are already in your WSL2 kernel, and how to rebuild the kernel module if something like `pl2303` is missing.
-
-* [`wsl2-systemd.md`](./wsl2-systemd.md)
-  Optional setup for enabling systemd in WSL2, which can help udev rules work correctly when devices are plugged in.
-
-* [`wsl-build-kernel-module.sh`](./wsl-build-kernel-module.sh)
-  Script to rebuild one or more USB serial kernel modules (e.g. `pl2303`, `cp210x`, `ftdi_sio`, etc.) from the WSL2 kernel source and store them persistently.
-
-* [`wsl-restore-kernel-modules.sh`](./wsl-restore-kernel-modules.sh)
-  Script to install and load the previously built kernel modules into `/lib/modules/<kernel>/extra/`, and update module dependencies.
-
-* [`wsl-boot-config.sh`](./wsl-boot-config.sh)
-  Tool to enable or disable WSL2 `systemd` support and automatically run the module restore script on boot, by editing `/etc/wsl.conf` safely and idempotently.
-
-* [`wsl-usb-serial-permissions.sh`](./wsl-usb-serial-permissions.sh)
-  Script to apply recommended `udev` rules and group membership fixes for using USB serial devices without root.
-
----
-
-## Precompiled modules in WSL2
-
-As of the time of writing, the default Microsoft-supplied WSL2 kernel includes many common USB serial drivers compiled as modules. You can check which are currently enabled with:
+WSL2 kernels include many common USB serial drivers as modules. To check which are present:
 
 ```bash
 zgrep CONFIG_USB_SERIAL /proc/config.gz
 ```
 
-Modules typically present in recent WSL2 kernels:
+### Typically included:
 
 * `ftdi_sio` — FTDI-based serial converters
 * `cp210x` — Silicon Labs USB-to-serial adapters
-* `ch341` — WCH CH340/CH341 USB-serial chips
+* `ch341` — CH340/CH341 USB-serial chips
 * `usbserial` — Generic USB serial core
 
-### Missing modules
+### May be missing:
 
-Some drivers — such as `pl2303` — may **not be included**, depending on the WSL2 kernel version. If the one you need is missing, you’ll need to build it manually using the provided scripts.
+* `pl2303` — Common adapter not always included
 
----
+You can [build missing modules manually](./wsl2-kernel.md) if needed.
 
-## Usage
+## Setup
 
-## Why modules must be restored manually
+### Step 1: Windows Host Setup (Required Once)
 
-While WSL2 **does support loading custom kernel modules**, it does **not preserve them across restarts**. Any custom `.ko` file copied to `/lib/modules/` will be discarded the next time WSL2 is shut down or restarted.
+Install and configure `usbipd-win` on the Windows side to enable device forwarding.
 
-This is due to how the WSL2 root filesystem is initialized from a compressed rootfs image.
-
-This repo works around it by:
-
-* Saving compiled modules into a persistent path: `/usr/local/lib/wsl-modules/<kernel>/`
-* Restoring them on boot via a `wsl.conf` hook and helper script
-
----
-
-## 💪 Setup Sequence (Recommended Order)
-
-If your USB serial driver is missing, follow these steps:
-
-### 1. Build the missing module(s)
-
-This compiles the driver source into a kernel module for your WSL2 version.
-
-```bash
-./wsl-build-kernel-module.sh pl2303
-```
-
-To build multiple at once:
-
-```bash
-./wsl-build-kernel-module.sh pl2303 cp210x ftdi_sio
-```
-
-Modules are stored under:
-
-```
-/usr/local/lib/wsl-modules/<your-kernel-version>/
-```
-
----
-
-### 2. Restore the module(s) into the current kernel
-
-This installs the module and makes it usable immediately:
-
-```bash
-sudo ./wsl-restore-kernel-modules.sh
-```
-
-This copies the modules to `/lib/modules/<kernel>/extra/`, runs `depmod`, and loads them with `modprobe`.
-
----
-
-### 3. Set up WSL boot-time config
-
-Since `/lib/modules` is volatile, run this to configure automatic restore + optional systemd enablement:
-
-```bash
-sudo ./wsl-boot-config.sh
-```
-
-You can control options:
-
-```bash
-sudo ./wsl-boot-config.sh --systemd on --restore off
-```
-
----
-
-### 4. Restart WSL to apply changes
+Run the following in PowerShell (as Administrator):
 
 ```powershell
+wsl --update
 wsl --shutdown
+
+winget install --interactive --exact dorssel.usbipd-win
+
+usbipd list
+usbipd bind --busid <BUSID>
+usbipd attach --wsl --busid <BUSID>
 ```
 
-After restarting, check for devices:
+For full instructions and troubleshooting, see [wsl2-serial.md](./wsl2-serial.md).
+
+### Step 2: WSL2 Setup
+
+Once the USB device is attached, continue setup inside WSL2.
+
+#### Option A: One-Line Setup
+
+Run everything in one step:
 
 ```bash
-ls /dev/ttyUSB*
+sudo ./wsl-setup-all.sh
 ```
 
----
+This script will:
 
-## Permissions
+* Build and install any missing modules
+* Restore modules into the current kernel
+* Configure systemd and boot behavior
+* Fix device permissions via udev and group membership
 
-Even with a working driver, you might not be able to use the device unless proper permissions are in place.
+#### Option B: Manual Setup
 
-To fix them automatically:
+1. Build missing module(s) (e.g., for `pl2303` or others)
 
-```bash
-sudo ./wsl-usb-serial-permissions.sh
-```
+   ```bash
+   ./wsl-build-kernel-module.sh pl2303
+   ```
 
-This adds udev rules, reloads them, and adds the current user to the `dialout` group.
+2. Restore module into the active kernel
 
----
+   ```bash
+   sudo ./wsl-restore-kernel-modules.sh
+   ```
+
+3. Enable boot-time restore and optional systemd
+
+   ```bash
+   sudo ./wsl-boot-config.sh
+   ```
+
+   Add `--systemd on` or `--restore off` as needed.
+
+4. Fix USB serial permissions
+
+   ```bash
+   sudo ./wsl-usb-serial-permissions.sh
+   ```
+
+5. Restart WSL
+
+   ```powershell
+   wsl --shutdown
+   ```
+
+   After restart, your device should show up:
+
+   ```bash
+   ls /dev/ttyUSB*
+   ```
 
 ## Contributing
 
-Pull requests, improvements, and other hardware support welcome!
+Pull requests, improvements, and support for other USB device types are welcome.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for full terms.
 
-### Key Points:
-- You are free to use, modify, and distribute this software for personal or commercial purposes.
-- Attribution to the original author, Ruslan Ovsyannikov, is required in derivative works.
-- The software is provided "as is," without warranty of any kind, express or implied.
-
-For more information, refer to the full license text in the [LICENSE](./LICENSE) file.
+* Free for personal and commercial use.
+* Attribution to the author (Ruslan Ovsyannikov) is required in derivative works.
+* Provided “as-is” with no warranty.
