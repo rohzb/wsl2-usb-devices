@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # wsl-usb-serial-permissions.sh
-# ----------------------------------------
+# -------------------------------------------------------------------------------
 # This script configures WSL2 to grant access to USB serial devices
 # (e.g. ttyUSB*) by:
 #   - Adding a udev rule to set permissions and group
@@ -48,7 +48,7 @@ run_with_spinner() {
         echo -e "\bFAILED"
         echo "---------- $description output ----------"
         cat "$log_file"
-        echo "-----------------------------------------"
+        echo "--------------------------------------------------------------------------------"
         exit 1
     fi
 }
@@ -73,7 +73,7 @@ else
     echo "[INFO] Please restart WSL (wsl --shutdown) for group changes to take effect."
 fi
 
-echo "=========================================="
+echo "==============================================================================="
 echo "[INFO] USB serial access setup complete."
 echo "[INFO] You can now use /dev/ttyUSB* devices without root."
-echo "=========================================="
+echo "==============================================================================="

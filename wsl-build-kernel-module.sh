@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # WSL2 Kernel Module Builder for USB Serial Drivers
-# ----------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------
 # This script automates cloning the WSL2 kernel source, configuring it,
 # building one or more USB serial driver modules, and saving them to a
 # persistent location for reuse.
@@ -53,7 +53,7 @@ run_with_spinner() {
         echo -e "\bFAILED"
         echo "---------- $description output ----------"
         cat "$log_file"
-        echo "-----------------------------------------"
+        echo "--------------------------------------------------------------------------------"
         exit 1
     fi
 }
@@ -72,12 +72,12 @@ SRC_REPO="https://github.com/microsoft/WSL2-Linux-Kernel.git"
 SRC_DIR="WSL2-Linux-Kernel"
 PERSIST_DIR="/usr/local/lib/wsl-modules/$KERNEL_VERSION"
 
-echo "=========================================="
+echo "==============================================================================="
 echo "  Building modules:        ${MODULES[*]}"
 echo "  Kernel version:          $KERNEL_VERSION"
 echo "  Source tag:              $KERNEL_TAG"
 echo "  Persistent location:     $PERSIST_DIR"
-echo "=========================================="
+echo "==============================================================================="
 
 # Step 0: Install required build dependencies (only if missing)
 echo "[INFO] Checking for required build dependencies..."

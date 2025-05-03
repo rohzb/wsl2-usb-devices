@@ -48,7 +48,7 @@ run_with_spinner() {
         echo -e "\bFAILED"
         echo "---------- $description output ----------"
         cat "$log_file"
-        echo "-----------------------------------------"
+        echo "--------------------------------------------------------------------------------"
         exit 1
     fi
 }
@@ -72,12 +72,12 @@ if [ ! -d "$SRC_DIR" ]; then
 fi
 
 # Summary output
-echo "=========================================="
+echo "==============================================================================="
 echo "  Restoring custom kernel modules"
 echo "  Kernel: $KERNEL"
 echo "  Source: $SRC_DIR"
 echo "  Target: $DEST_DIR"
-echo "=========================================="
+echo "==============================================================================="
 
 mkdir -p "$DEST_DIR"
 
@@ -119,7 +119,7 @@ for mod in "$DEST_DIR"/*.ko; do
 done
 
 # Final report
-echo "=========================================="
+echo "==============================================================================="
 if [ "${#FAILED_MODULES[@]}" -gt 0 ]; then
     echo "[WARN] Some modules failed to load:"
     for fail in "${FAILED_MODULES[@]}"; do
