@@ -17,9 +17,9 @@ Enable USB-to-serial and other USB device support in WSL2 using `usbipd-win` and
 
 ## Overview
 
-This repository provides everything needed to use USB devices — especially USB-to-serial adapters — inside WSL2. It's aimed at developers working with Arduinos, embedded boards, and other hardware platforms that expose serial interfaces over USB.
+This repository provides a collection of tools and instructions that help with accessing USB devices — especially USB-to-serial adapters — inside WSL2. It is intended for developers working with Arduinos, embedded boards, and other hardware platforms that expose serial interfaces over USB.
 
-This setup assumes Ubuntu in WSL2, though other distros should work with minor changes.
+The setup and scripts were tested with Ubuntu in WSL2, but can be adapted to other distributions with minor modifications.
 
 ## Concept: Bridging USB Devices into WSL2
 
@@ -46,11 +46,11 @@ See [`wsl2-serial.md`](./wsl2-serial.md) for a full walkthrough.
 * [`wsl2-serial.md`](./wsl2-serial.md): Full guide for using USB serial devices with WSL2, including `usbipd` setup on Windows.
 * [`wsl2-kernel.md`](./wsl2-kernel.md): Instructions for checking and compiling missing USB serial drivers (e.g. `pl2303`).
 * [`wsl2-systemd.md`](./wsl2-systemd.md): Optional steps to enable systemd for improved udev support.
-* `wsl-build-kernel-module.sh`: Build USB serial modules from the WSL2 kernel source.
-* `wsl-restore-kernel-modules.sh`: Restore compiled modules into the active kernel.
-* `wsl-boot-config.sh`: Configure `/etc/wsl.conf` to enable systemd and module restore at boot.
-* `wsl-usb-serial-permissions.sh`: Apply udev rules and group membership for device access.
-* `wsl-setup-all.sh`: Run all setup steps in sequence.
+* [`wsl-build-kernel-module.sh`](./wsl-build-kernel-module.sh): Build USB serial modules from the WSL2 kernel source.
+* [`wsl-restore-kernel-modules.sh`](./wsl-restore-kernel-modules.sh): Restore compiled modules into the active kernel.
+* [`wsl-boot-config.sh`](./wsl-boot-config.sh): Configure `/etc/wsl.conf` to enable systemd and module restore at boot.
+* [`wsl-usb-serial-permissions.sh`](./wsl-usb-serial-permissions.sh): Apply udev rules and group membership for device access.
+* [`wsl-setup-all.sh`](./wsl-setup-all.sh): Run all setup steps in sequence.
 
 ## Precompiled Modules in WSL2
 
