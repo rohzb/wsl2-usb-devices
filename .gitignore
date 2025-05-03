@@ -1,0 +1,6 @@
+# We do NOT want to include the WSL2 kernel source code in the repository.
+WSL2-Linux-Kernel/
+
+# all thigs starting with debug should be also excluded:
+debug*
+
