@@ -1,3 +1,14 @@
+# Project Title
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Setup](#setup)
+3. [Usage](#usage)
+4. [Contributing](#contributing)
+5. [License](#license)
+
+## Overview
+
 # USB Device Access in WSL2
 
 This repository documents how to use USB devices — especially USB-to-serial adapters — inside WSL2 on a Windows host. It is aimed at developers working with hardware like Arduinos, embedded boards, microcontrollers, and other serial-based or USB-connected equipment.
@@ -7,6 +18,8 @@ Many tools for such platforms work better under Linux, but WSL2 provides a pract
 This setup assumes Ubuntu in WSL2, though it can be adapted for other distros with minor changes.
 
 ---
+
+## Setup
 
 ## 🚦 Concept: Bridging USB Devices into WSL2
 
@@ -75,6 +88,8 @@ Modules typically present in recent WSL2 kernels:
 Some drivers — such as `pl2303` — may **not be included**, depending on the WSL2 kernel version. If the one you need is missing, you’ll need to build it manually using the provided scripts.
 
 ---
+
+## Usage
 
 ## Why modules must be restored manually
 
@@ -171,6 +186,17 @@ This adds udev rules, reloads them, and adds the current user to the `dialout` g
 
 ---
 
-## Contributions
+## Contributing
 
 Pull requests, improvements, and other hardware support welcome!
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+### Key Points:
+- You are free to use, modify, and distribute this software for personal or commercial purposes.
+- Attribution to the original author, Ruslan Ovsyannikov, is required in derivative works.
+- The software is provided "as is," without warranty of any kind, express or implied.
+
+For more information, refer to the full license text in the [LICENSE](./LICENSE) file.

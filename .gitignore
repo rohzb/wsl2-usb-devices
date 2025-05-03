@@ -4,3 +4,21 @@ WSL2-Linux-Kernel/
 # all thigs starting with debug should be also excluded:
 debug*
 
+# Temporary files
+*.log
+*.tmp
+*.swp
+
+# Build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+.tmp_versions/
+modules.order
+Module.symvers
+
+# System files
+.DS_Store
+Thumbs.db
+
